@@ -65,9 +65,9 @@ export interface UploadResponseFormat<AdditionalFileData = {}> {
 }
 
 /**
- * ImageToolData type representing the input and output data format for the image tool, including optional custome actions.
+ * VideoToolData type representing the input and output data format for the image tool, including optional custome actions.
  */
-export type ImageToolData<Actions = {}, AdditionalFileData = {}> = {
+export type VideoToolData<Actions = {}, AdditionalFileData = {}> = {
   /**
    * Caption for the image.
    */
@@ -218,7 +218,7 @@ export interface HTMLPasteEventDetailExtended extends HTMLPasteEventDetail {
 }
 
 /**
- * Parameter type of Image setter function in ImageTool
+ * Parameter type of Image setter function in VideoTool
  */
 export type ImageSetterParam = {
   /**

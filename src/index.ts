@@ -18,7 +18,7 @@
  * It will expose 8008 port, so you can pass http://localhost:8008 with the Tools config:
  *
  * image: {
- *   class: ImageTool,
+ *   class: VideoTool,
  *   config: {
  *     endpoints: {
  *       byFile: 'http://localhost:8008/uploadFile',
@@ -35,15 +35,15 @@ import './index.css';
 import Ui from './ui';
 import Uploader from './uploader';
 
-import { IconAddBorder, IconStretch, IconAddBackground, IconPicture, IconText } from '@codexteam/icons';
-import type { ActionConfig, UploadResponseFormat, ImageToolData, ImageConfig, HTMLPasteEventDetailExtended, ImageSetterParam, FeaturesConfig } from './types/types';
+import { IconAddBorder, IconStretch, IconAddBackground, IconPlay, IconText } from '@codexteam/icons';
+import type { ActionConfig, UploadResponseFormat, VideoToolData, ImageConfig, HTMLPasteEventDetailExtended, ImageSetterParam, FeaturesConfig } from './types/types';
 
-type ImageToolConstructorOptions = BlockToolConstructorOptions<ImageToolData, ImageConfig>;
+type VideoToolConstructorOptions = BlockToolConstructorOptions<VideoToolData, ImageConfig>;
 
 /**
- * Implementation of ImageTool class
+ * Implementation of VideoTool class
  */
-export default class ImageTool implements BlockTool {
+export default class VideoTool implements BlockTool {
   /**
    * Editor.js API instance
    */
@@ -55,7 +55,7 @@ export default class ImageTool implements BlockTool {
   private block: BlockAPI;
 
   /**
-   * Configuration for the ImageTool
+   * Configuration for the VideoTool
    */
   private config: ImageConfig;
 
@@ -72,7 +72,7 @@ export default class ImageTool implements BlockTool {
   /**
    * Stores current block data internally
    */
-  private _data: ImageToolData;
+  private _data: VideoToolData;
 
   /**
    * Caption enabled state
@@ -90,7 +90,7 @@ export default class ImageTool implements BlockTool {
    * @param tool.readOnly - read-only mode flag
    * @param tool.block - current Block API
    */
-  constructor({ data, config, api, readOnly, block }: ImageToolConstructorOptions) {
+  constructor({ data, config, api, readOnly, block }: VideoToolConstructorOptions) {
     this.api = api;
     this.block = block;
 
@@ -164,8 +164,8 @@ export default class ImageTool implements BlockTool {
    */
   public static get toolbox(): ToolboxConfig {
     return {
-      icon: IconPicture,
-      title: 'Image',
+      icon: IconPlay,
+      title: 'Video',
     };
   }
 
@@ -212,14 +212,14 @@ export default class ImageTool implements BlockTool {
    * @param savedData — data received after saving
    * @returns false if saved data is not correct, otherwise true
    */
-  public validate(savedData: ImageToolData): boolean {
+  public validate(savedData: VideoToolData): boolean {
     return !!savedData.file.url;
   }
 
   /**
    * Return Block data
    */
-  public save(): ImageToolData {
+  public save(): VideoToolData {
     const caption = this.ui.nodes.caption;
 
     this._data.caption = caption.innerHTML;
@@ -234,7 +234,7 @@ export default class ImageTool implements BlockTool {
   public renderSettings(): TunesMenuConfig {
     // Merge default tunes with the ones that might be added by user
     // @see https://github.com/editor-js/image/pull/49
-    const tunes = ImageTool.tunes.concat(this.config.actions || []);
+    const tunes = VideoTool.tunes.concat(this.config.actions || []);
     const featureTuneMap: Record<string, string> = {
       border: 'withBorder',
       background: 'withBackground',
@@ -266,7 +266,7 @@ export default class ImageTool implements BlockTool {
      * @param tune - tune to check
      */
     const isActive = (tune: ActionConfig): boolean => {
-      let currentState = this.data[tune.name as keyof ImageToolData] as boolean;
+      let currentState = this.data[tune.name as keyof VideoToolData] as boolean;
 
       if (tune.name === 'caption') {
         currentState = this.isCaptionEnabled ?? currentState;
@@ -299,7 +299,7 @@ export default class ImageTool implements BlockTool {
           newState = this.isCaptionEnabled;
         }
 
-        this.tuneToggled(tune.name as keyof ImageToolData, newState);
+        this.tuneToggled(tune.name as keyof VideoToolData, newState);
       },
     }));
   }
@@ -323,21 +323,21 @@ export default class ImageTool implements BlockTool {
        */
       tags: [
         {
-          img: { src: true },
+          video: { src: true },
         },
       ],
       /**
        * Paste URL of image into the Editor
        */
       patterns: {
-        image: /https?:\/\/\S+\.(gif|jpe?g|tiff|png|svg|webp)(\?[a-z0-9=]*)?$/i,
+        image: /https?:\/\/\S+\.(mp4)(\?[a-z0-9=]*)?$/i,
       },
 
       /**
        * Drag n drop file from into the Editor
        */
       files: {
-        mimeTypes: ['image/*'],
+        mimeTypes: ['video/*'],
       },
     };
   }
@@ -390,16 +390,16 @@ export default class ImageTool implements BlockTool {
    * Stores all Tool's data
    * @param data - data in Image Tool format
    */
-  private set data(data: ImageToolData) {
+  private set data(data: VideoToolData) {
     this.image = data.file;
 
     this._data.caption = data.caption || '';
     this.ui.fillCaption(this._data.caption);
 
-    ImageTool.tunes.forEach(({ name: tune }) => {
-      const value = typeof data[tune as keyof ImageToolData] !== 'undefined' ? data[tune as keyof ImageToolData] === true || data[tune as keyof ImageToolData] === 'true' : false;
+    VideoTool.tunes.forEach(({ name: tune }) => {
+      const value = typeof data[tune as keyof VideoToolData] !== 'undefined' ? data[tune as keyof VideoToolData] === true || data[tune as keyof VideoToolData] === 'true' : false;
 
-      this.setTune(tune as keyof ImageToolData, value);
+      this.setTune(tune as keyof VideoToolData, value);
     });
 
     if (data.caption) {
@@ -412,7 +412,7 @@ export default class ImageTool implements BlockTool {
   /**
    * Return Tool data
    */
-  private get data(): ImageToolData {
+  private get data(): VideoToolData {
     return this._data;
   }
 
@@ -448,7 +448,7 @@ export default class ImageTool implements BlockTool {
     console.log('Image Tool: uploading failed because of', errorText);
 
     this.api.notifier.show({
-      message: this.api.i18n.t('Couldn’t upload image. Please try another.'),
+      message: this.api.i18n.t('Couldn’t upload video. Please try another.'),
       style: 'error',
     });
     this.ui.hidePreloader();
@@ -459,7 +459,7 @@ export default class ImageTool implements BlockTool {
    * @param tuneName - tune that has been clicked
    * @param state - new state
    */
-  private tuneToggled(tuneName: keyof ImageToolData, state: boolean): void {
+  private tuneToggled(tuneName: keyof VideoToolData, state: boolean): void {
     if (tuneName === 'caption') {
       this.ui.applyTune(tuneName, state);
 
@@ -480,7 +480,7 @@ export default class ImageTool implements BlockTool {
    * @param tuneName - {@link Tunes.tunes}
    * @param value - tune state
    */
-  private setTune(tuneName: keyof ImageToolData, value: boolean): void {
+  private setTune(tuneName: keyof VideoToolData, value: boolean): void {
     (this._data[tuneName] as boolean) = value;
 
     this.ui.applyTune(tuneName, value);
