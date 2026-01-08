@@ -196,11 +196,13 @@ export default class Ui {
     /**
      * Check for a source extension to compose element correctly: video tag for mp4, img — for others
      */
-    const tag = /\.mp4$/.test(url) ? 'VIDEO' : 'IMG';
+    const isHls = /\.m3u8$/.test(url)
+    const tag = isHls || /\.mp4$/.test(url) ? 'VIDEO' : 'IMG';
 
-    const attributes: { [key: string]: string | boolean } = {
-      src: url,
-    };
+    const attributes: { [key: string]: string | boolean } = { };
+    if (tag === "IMG" || !isHls) {
+      attributes.src = url;
+    }
 
     /**
      * We use eventName variable because IMG and VIDEO tags have different event to be called on source load
@@ -231,6 +233,21 @@ export default class Ui {
      * Compose tag with defined attributes
      */
     this.nodes.imageEl = make(tag, this.CSS.imageEl, attributes);
+
+    /**
+     * Set up video attributes as needed
+     */
+    if (isHls) {
+      if (this.nodes.imageEl.canPlayType('application/vnd.apple.mpegurl')) {
+        this.nodes.imageEl.src = url;
+      } else {
+        if (typeof window.Hls === undefined) console.warn('Hls is not loaded');
+
+        var hls = new Hls();
+        hls.loadSource(url);
+        hls.attachMedia(this.nodes.imageEl);
+      }
+    }
 
     /**
      * Add load event listener
