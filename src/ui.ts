@@ -216,11 +216,9 @@ export default class Ui {
      */
     if (tag === 'VIDEO') {
       /**
-       * Add attributes for playing muted mp4 as a gif
+       * Add video attributes for playing
        */
-      attributes.autoplay = true;
-      attributes.loop = true;
-      attributes.muted = true;
+      attributes.controls = true;
       attributes.playsinline = true;
 
       /**
@@ -240,31 +238,28 @@ export default class Ui {
     if (isHls) {
       if (this.nodes.imageEl.canPlayType('application/vnd.apple.mpegurl')) {
         this.nodes.imageEl.src = url;
-        this.toggleStatus(UiState.Filled);
-        if (this.nodes.imagePreloader !== undefined) {
-          this.nodes.imagePreloader.style.backgroundImage = '';
-        }
+        this.nodes.imageEl.load();
       } else {
         if (typeof window.Hls === undefined) console.warn('Hls is not loaded');
 
         var hls = new Hls();
         hls.loadSource(url);
         hls.attachMedia(this.nodes.imageEl);
+      }
+
+      /**
+       * Add load event listener
+       */
+      this.nodes.imageEl.addEventListener(eventName, () => {
+        this.toggleStatus(UiState.Filled);
 
         /**
-         * Add load event listener
+         * Preloader does not exists on first rendering with presaved data
          */
-        this.nodes.imageEl.addEventListener(eventName, () => {
-          this.toggleStatus(UiState.Filled);
-
-          /**
-           * Preloader does not exists on first rendering with presaved data
-           */
-          if (this.nodes.imagePreloader !== undefined) {
-            this.nodes.imagePreloader.style.backgroundImage = '';
-          }
-        });
-      }
+        if (this.nodes.imagePreloader !== undefined) {
+          this.nodes.imagePreloader.style.backgroundImage = '';
+        }
+      });
     }
 
     this.nodes.imageContainer.appendChild(this.nodes.imageEl);
